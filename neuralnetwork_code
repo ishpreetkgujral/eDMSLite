@@ -1,0 +1,108 @@
+df1 = pd.read_csv("dataset_cleaned.csv" , encoding = "utf-8")
+df1.head()
+
+df = df1[df1['CHILD_SORT_ORDER'].str.isdigit()]
+
+child_dept = []
+child_title_encoded = []
+  
+
+for index, rows in df.iterrows():
+    my_list =[ rows.CHILD_DEPT_NAME]
+    
+    child_dept.append(my_list)
+
+label_encoder = LabelEncoder()
+parent_id_encoded1 = label_encoder.fit_transform(df["PARENT_ID"])
+
+#result1 = [int(i) for i in parent_id_encoded1]
+n = np.amax(parent_id_encoded1)+1
+parent_id_encoded = parent_id_encoded1/(n+1)
+print (n)
+print(parent_id_encoded)
+
+label_encoder = LabelEncoder()
+parent_title_encoded1 = label_encoder.fit_transform(df["PARENT_TITLE"])
+n = np.amax(parent_title_encoded1)+1
+parent_title_encoded = parent_title_encoded1/n
+print (n)
+print(parent_title_encoded)
+
+
+label_encoder = LabelEncoder()
+child_title_encoded1 = label_encoder.fit_transform(df["CHILD_TITLE"])
+n = np.amax(child_title_encoded1)+1
+print (n)
+child_title_encoded = child_title_encoded1/n
+print(child_title_encoded)
+
+label_encoder = LabelEncoder()
+parent_dept_encoded1 = label_encoder.fit_transform(df["PARENT_DEPT_NAME"])
+n = np.amax(parent_dept_encoded1)+1
+parent_dept_encoded = parent_dept_encoded1/n
+print(parent_dept_encoded)
+
+label_encoder = LabelEncoder()
+child_dept_encoded1 = label_encoder.fit_transform(child_dept)
+n = np.amax(child_dept_encoded1)+1
+print (n)
+child_dept_encoded = child_dept_encoded1/n
+print(child_dept_encoded)
+
+Z = np.array([parent_id_encoded,parent_title_encoded,child_title_encoded,parent_dept_encoded,child_dept_encoded])
+X = Z.transpose()
+Z = df["CHILD_SORT_ORDER"]
+result = [int(i) for i in Z]
+n = np.amax(result)+1
+Y = result/(n+1)
+
+ 
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=1)
+
+#(X_train, X_test) = X[70:], X[:30]
+#(y_train, y_test) = Y[70:], Y[:30]
+#print("Shape of x:", X.shape)
+#print("\nFirst 10 rows of X")
+print(X[:10])
+
+# Building the model
+# Note that filling out the empty rank as "0", gave us an extra column, for "Rank 0" students.
+# Thus, our input dimension is 7 instead of 6.
+#model = Sequential()
+#model.add(Dense(128, activation='relu', input_shape=(5,)))
+#model.add(Dropout(.2))
+#model.add(Dense(64, activation='relu'))
+#model.add(Dropout(.1))
+#model.add(Dense(1, activation='softmax'))
+#
+## Compiling the model
+#model.compile(loss = 'sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+#model.summary()
+
+
+model = Sequential()
+model.add(Dense(128, activation='relu', input_shape=(5,)))
+model.add(Dropout(.2))
+model.add(Dense(64, activation='relu'))
+model.add(Dropout(.2))
+model.add(Dense(32, activation='relu'))
+model.add(Dropout(.1))
+model.add(Dense(1, activation='softmax'))
+
+# Compiling the model
+model.compile(loss = 'mean_squared_error', optimizer='rmsprop', metrics=['accuracy'])
+model.summary()
+
+model.fit(X_train, y_train, epochs=500, batch_size=100, verbose=0)
+
+score = model.evaluate(X_train, y_train)
+print("\n Training Accuracy:", score)
+score = model.evaluate(X_test, y_test)
+print("\n Testing Accuracy:", score)
+
+model.save('/home/vridhisagar/Desktop/internship2k19/model_.h5')
+a= np.array([["09000200809f6c02"], ["PURCHASE REQUISITION-MRPACK"],["PACKAGED EQUIPMENT"], ["SPECIFICATION"],["INSTRUMENTATION"]  ])
+
+print (a.shape)
+
+model.predict(a,batch_size=100, verbose=0,steps=None)
